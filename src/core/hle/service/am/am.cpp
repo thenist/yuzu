@@ -1563,8 +1563,8 @@ void IApplicationFunctions::ExecuteProgram(Kernel::HLERequestContext& ctx) {
     LOG_WARNING(Service_AM, "(STUBBED) called");
 
     IPC::RequestParser rp{ctx};
-    const auto unk_1 = rp.Pop<u32>();
-    const auto unk_2 = rp.Pop<u32>();
+    [[maybe_unused]] const auto unk_1 = rp.Pop<u32>();
+    [[maybe_unused]] const auto unk_2 = rp.Pop<u32>();
     const auto program_index = rp.Pop<u64>();
 
     IPC::ResponseBuilder rb{ctx, 2};
