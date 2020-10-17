@@ -976,7 +976,7 @@ void GMainWindow::AllowOSSleep() {
 #endif
 }
 
-bool GMainWindow::LoadROM(const QString& filename) {
+bool GMainWindow::LoadROM(const QString& filename, std::size_t program_index) {
     // Shutdown previous session if the emu thread is still active...
     if (emu_thread != nullptr)
         ShutdownGame();
@@ -1001,7 +1001,8 @@ bool GMainWindow::LoadROM(const QString& filename) {
 
     system.RegisterHostThread();
 
-    const Core::System::ResultStatus result{system.Load(*render_window, filename.toStdString())};
+    const Core::System::ResultStatus result{
+        system.Load(*render_window, filename.toStdString(), program_index)};
 
     const auto drd_callout =
         (UISettings::values.callout_flags & static_cast<u32>(CalloutFlag::DRDDeprecation)) == 0;
@@ -1083,14 +1084,16 @@ void GMainWindow::SelectAndSetCurrentUser() {
     Settings::values.current_user = dialog.GetIndex();
 }
 
-void GMainWindow::BootGame(const QString& filename) {
+void GMainWindow::BootGame(const QString& filename, std::size_t program_index) {
     LOG_INFO(Frontend, "yuzu starting...");
     StoreRecentFile(filename); // Put the filename on top of the list
 
     u64 title_id{0};
 
+    last_filename_booted = filename;
+
     const auto v_file = Core::GetGameFileFromPath(vfs, filename.toUtf8().constData());
-    const auto loader = Loader::GetLoader(v_file);
+    const auto loader = Loader::GetLoader(v_file, program_index);
     if (!(loader == nullptr || loader->ReadProgramId(title_id) != Loader::ResultStatus::Success)) {
         // Load per game settings
         Config per_game_config(fmt::format("{:016X}.ini", title_id), false);
@@ -1102,7 +1105,7 @@ void GMainWindow::BootGame(const QString& filename) {
         SelectAndSetCurrentUser();
     }
 
-    if (!LoadROM(filename))
+    if (!LoadROM(filename, program_index))
         return;
 
     // Create and start the emulation thread
@@ -2121,6 +2124,11 @@ void GMainWindow::OnStopGame() {
 
 void GMainWindow::OnLoadComplete() {
     loading_screen->OnLoadComplete();
+}
+
+void GMainWindow::OnExecuteProgram(std::size_t program_index) {
+    ShutdownGame();
+    BootGame(last_filename_booted, program_index);
 }
 
 void GMainWindow::ErrorDisplayDisplayError(QString body) {
