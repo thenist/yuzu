@@ -79,7 +79,6 @@ private:
     void SaveMouseValues();
     void SaveTouchscreenValues();
     void SaveMotionTouchValues();
-    void SaveInputProfileNames();
 
     // Save functions based off the respective config section names.
     void SaveAudioValues();
