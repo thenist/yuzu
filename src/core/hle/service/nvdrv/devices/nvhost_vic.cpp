@@ -11,7 +11,9 @@
 
 namespace Service::Nvidia::Devices {
 nvhost_vic::nvhost_vic(Core::System& system, std::shared_ptr<nvmap> nvmap_dev)
-    : nvhost_nvdec_common(system, std::move(nvmap_dev)) {}
+    : nvhost_nvdec_common(system, std::move(nvmap_dev)) {
+    vic_device = true;
+}
 
 nvhost_vic::~nvhost_vic() = default;
 
